@@ -176,7 +176,6 @@ function displayTable(params) {
 
 // Run command
 rl.question('Enter your command: ', (command) => {
-  console.log("command", command)
   if (command === 'help') {
     // Read the content of the readme.md file
     fs.readFile('readme.md', 'utf8', (err, data) => {
@@ -186,8 +185,8 @@ rl.question('Enter your command: ', (command) => {
       // Log the content to the console
       console.log('Content of readme.md:');
       console.log(data);
-      return;
     });
+    return
   }
 
   const [action, entityType, ...conditionParts] = command.split(' ');
