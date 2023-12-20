@@ -1,19 +1,10 @@
+// code example:
 
 const fs = require('fs');
 const readline = require('readline');
 const ORGANIZATIONS = require('./data/organizations.json');
 const TICKETS = require('./data/tickets.json');
 const USERS = require('./data/users.json');
-const ENTITY_TYPES = {
-  ORGANIZATIONS: 'organizations',
-  USERS: 'users',
-  TICKETS: 'tickets'
-}
-const ACTIONS = {
-  DESCRIBE: 'describe',
-  TABLE: 'table',
-  SEARCH: 'search'
-}
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -23,7 +14,7 @@ const rl = readline.createInterface({
 // Display fields in table
 function describeEntity(params) {
   const { entityType } = params
-  const entity = entityType === ENTITY_TYPES.ORGANIZATIONS ? ORGANIZATIONS[0] : entityType === ENTITY_TYPES.USERS ? USERS[0] : TICKETS[0]
+  const entity = entityType === 'organizations' ? ORGANIZATIONS[0] : entityType === 'users' ? USERS[0] : TICKETS[0]
   console.log(Object.keys(entity).join('\n'));
 }
 
@@ -92,10 +83,10 @@ function searchTickets(results) {
 function getEnhancedResults(entityType, results) {
   let enhancedResults;
   switch (entityType) {
-    case ENTITY_TYPES.USERS:
+    case 'users':
       enhancedResults = searchUsers(results);
       break;
-    case ENTITY_TYPES.TICKETS:
+    case 'tickets':
       enhancedResults = searchTickets(results);
       break;
     default:
@@ -106,7 +97,7 @@ function getEnhancedResults(entityType, results) {
 }
 
 // Search entity valid
-function searchEntity(entityType, entity, field, value, action) {
+function searchEntity(entityType, entity, field, value, format) {
   const results = entity.filter(item => {
     if (Array.isArray(item[field])) {
       return item[field].includes(value);
@@ -115,7 +106,7 @@ function searchEntity(entityType, entity, field, value, action) {
     }
   });
 
-  if (action === ACTIONS.TABLE) return results
+  if (format === 'table') return results
 
   // Enhance the search results with tickets and users information
   const enhancedResults = getEnhancedResults(entityType, results);
@@ -128,10 +119,10 @@ function searchAndDisplay(params) {
     entityType,
     field,
     value,
-    action
+    format
   } = params
-  const entity = entityType === ENTITY_TYPES.ORGANIZATIONS ? ORGANIZATIONS : entityType === ENTITY_TYPES.USERS ? USERS : TICKETS;
-  const results = searchEntity(entityType, entity, field, value, action);
+  const entity = entityType === 'organizations' ? ORGANIZATIONS : entityType === 'users' ? USERS : TICKETS;
+  const results = searchEntity(entityType, entity, field, value, format);
   console.log(JSON.stringify({
     number_of_result: results.length,
     search_result: results,
@@ -144,10 +135,10 @@ function displayTable(params) {
     entityType,
     field,
     value,
-    action
+    format
   } = params
-  const entity = entityType === ENTITY_TYPES.ORGANIZATIONS ? ORGANIZATIONS : entityType === ENTITY_TYPES.USERS ? USERS : TICKETS;
-  const results = searchEntity(entityType, entity, field, value, action);
+  const entity = entityType === 'organizations' ? ORGANIZATIONS : entityType === 'users' ? USERS : TICKETS;
+  const results = searchEntity(entityType, entity, field, value, format);
   // Function to pad strings for consistent column width
   function padString(str, width) {
     str = str || ''; // Set str to an empty string if it's undefined
@@ -159,19 +150,45 @@ function displayTable(params) {
     console.log('│─────────│──────────────│───────────│────────│───────────│─────────────────────────│──────────────│───────────────────────│──────────────────────│───────│──────────────│───────────────────│────────────────────────│');
   }
 
-  function printRow(params) {
-    const user = entityType === ENTITY_TYPES.ORGANIZATIONS ?  params : params['0']
-    const tags = Array.isArray(user.tags) ? user.tags.join(', ') : '';
+  // Function to print a row in the table
+  function printRow() {
+    const user = {
+        _id: 101,
+        url: 'http://initech.tokoin.io.com/api/v2/organizations/101.json',
+        external_id: '9270ed79-35eb-4a38-a46f-35725197ea8d',
+        name: 'Enthaze',
+        domain_names: [ 'kage.com', 'ecratic.com', 'endipin.com', 'zentix.com' ],
+        created_at: '2016-05-21T11:10:28 -10:00',
+        details: 'MegaCorp',
+        shared_tickets: false,
+        tags: [ 'Fulton', 'West', 'Rodriguez', 'Farley' ],
+        tickets: [
+          'A Drama in Portugal',
+          'A Problem in Ethiopia',
+          'A Problem in Turks and Caicos Islands',
+          'A Problem in Guyana'
+        ],
+        users: [
+          'Loraine Pittman',
+          'Francis Bailey',
+          'Haley Farmer',
+          'Herrera Norman'
+        ]
+      }
+    // Print user data
+    console.log("user", user)
+    // console.log("user['0']", user['0'])
+    const tags = Array.isArray(user['0'].tags) ? user['0'].tags.join(', ') : '';
     const submittedTickets = Array.isArray(user.submitted_tickets) ? user.submitted_tickets.join(', ') : '';
-    const assignedTickets = Array.isArray(user.assigned_tickets) ? user.assigned_tickets.join(', ') : '';
-  
+    const assignedTickets = Array.isArray(user['0'].assigned_tickets) ? user['0'].assigned_tickets.join(', ') : '';
+
     const organizationTags = user.organization_name && user.organization_name.tags
       ? Array.isArray(user.organization_name.tags)
         ? user.organization_name.tags.join(', ')
         : ''
       : '';
-  
-    console.log(`│ ${padString(user._id.toString(), 9)}│ ${padString(user.name, 14)}│ ${padString(user.alias, 11)}│ ${padString(user.active ? 'Yes' : 'No', 7)}│ ${padString(user.timezone, 10)}│ ${padString(user.email, 25)}│ ${padString(user.phone, 14)}│ ${padString(user.signature, 21)}│ ${padString(tags, 21)}│ ${padString(user.role, 7)}│ ${padString(user.organization_name, 14)}│ ${padString(submittedTickets, 19)}│ ${padString(assignedTickets, 24)}│ ${padString(organizationTags, 21)}│\n`);
+
+    console.log(`│ ${padString(user['0']._id.toString(), 9)}│ ${padString(user['0'].name, 14)}│ ${padString(user['0'].alias, 11)}│ ${padString(user['0'].active ? 'Yes' : 'No', 7)}│ ${padString(user['0'].timezone, 10)}│ ${padString(user['0'].email, 25)}│ ${padString(user['0'].phone, 14)}│ ${padString(user['0'].signature, 21)}│ ${padString(tags, 21)}│ ${padString(user['0'].role, 7)}│ ${padString(user.organization_name, 14)}│ ${padString(submittedTickets, 19)}│ ${padString(assignedTickets, 24)}│ ${padString(organizationTags, 21)}│\n`);
   }
 
   // Print table header
@@ -207,13 +224,13 @@ rl.question('Enter your command: ', (command) => {
   const [field, value] = condition.split('=').map(part => part.trim());
 
   switch (action) {
-    case ACTIONS.DESCRIBE:
+    case 'describe':
       describeEntity({ entityType });
       break;
-    case ACTIONS.TABLE:
+    case 'table':
       displayTable({ entityType, field, value, action });
       break;
-    case ACTIONS.SEARCH:
+    case 'search':
       searchAndDisplay({ entityType, field, value, action });
       break;
     default:
@@ -221,3 +238,78 @@ rl.question('Enter your command: ', (command) => {
   }
   rl.close();
 });
+
+// expect
+// input: table organizations tags=West
+// output: 
+// │─────────│─────────│─────────────────────────│──────────│──────────────────────────│────────────────────────│──────────────────────────│
+// │ ID (1)  │  NAME   │      DOMAIN NAMES       │ DETAILS  │           TAGS           │        TICKETS         │          USERS           │
+// │─────────│─────────│─────────────────────────│──────────│──────────────────────────│────────────────────────│──────────────────────────│
+// │   101   │ Enthaze │ kage.com, ecratic.com,  │ MegaCorp │ Fulton, West, Rodriguez, │  A Drama in Portugal,  │ Loraine Pittman, Francis │
+// │         │         │ endipin.com, zentix.com │          │          Farley          │ A Problem in Ethiopia, │  Bailey, Haley Farmer,   │
+// │         │         │                         │          │                          │   A Problem in Turks   │      Herrera Norman      │
+// │         │         │                         │          │                          │ and Caicos Islands, A  │                          │
+// │         │         │                         │          │                          │   Problem in Guyana    │                          │
+// │─────────│─────────│─────────────────────────│──────────│──────────────────────────│────────────────────────│──────────────────────────│
+
+
+
+
+
+// ......
+const arr1 =  [
+  {
+    _id: 101,
+    url: 'http://initech.tokoin.io.com/api/v2/organizations/101.json',
+    external_id: '9270ed79-35eb-4a38-a46f-35725197ea8d',
+    name: 'Enthaze',
+    domain_names: [ 'kage.com', 'ecratic.com', 'endipin.com', 'zentix.com' ],
+    created_at: '2016-05-21T11:10:28 -10:00',
+    details: 'MegaCorp',
+    shared_tickets: false,
+    tags: [ 'Fulton', 'West', 'Rodriguez', 'Farley' ],
+    tickets: [
+      'A Drama in Portugal',
+      'A Problem in Ethiopia',
+      'A Problem in Turks and Caicos Islands',
+      'A Problem in Guyana'
+    ],
+    users: [
+      'Loraine Pittman',
+      'Francis Bailey',
+      'Haley Farmer',
+      'Herrera Norman'
+    ]
+  }
+]
+
+const arr2 = [
+    {
+        '0': { 
+        _id: 101,
+        url: 'http://initech.tokoin.io.com/api/v2/organizations/101.json',
+        external_id: '9270ed79-35eb-4a38-a46f-35725197ea8d',
+        name: 'Enthaze',
+        domain_names: [ 'kage.com', 'ecratic.com', 'endipin.com', 'zentix.com' ],
+        created_at: '2016-05-21T11:10:28 -10:00',
+        details: 'MegaCorp',
+        shared_tickets: false,
+        tags: [ 'Fulton', 'West', 'Rodriguez', 'Farley' ],
+        tickets: [
+          'A Drama in Portugal',
+          'A Problem in Ethiopia',
+          'A Problem in Turks and Caicos Islands',
+          'A Problem in Guyana'
+        ],
+        users: [
+          'Loraine Pittman',
+          'Francis Bailey',
+          'Haley Farmer',
+          'Herrera Norman'
+        ]
+      }
+    }
+]
+
+
+// ví dụ có arr1 và arr2, kiểm tra chỉ lấy value trong cùng của object, bỏ qua lớp {'0':
