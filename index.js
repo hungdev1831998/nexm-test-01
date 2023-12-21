@@ -160,17 +160,17 @@ function displayTable(params) {
   }
 
   function printRow(params) {
-    const user = entityType === ENTITY_TYPES.ORGANIZATIONS ?  params : params['0']
+    const user = params
     const tags = Array.isArray(user.tags) ? user.tags.join(', ') : '';
     const submittedTickets = Array.isArray(user.submitted_tickets) ? user.submitted_tickets.join(', ') : '';
     const assignedTickets = Array.isArray(user.assigned_tickets) ? user.assigned_tickets.join(', ') : '';
-  
+
     const organizationTags = user.organization_name && user.organization_name.tags
       ? Array.isArray(user.organization_name.tags)
         ? user.organization_name.tags.join(', ')
         : ''
       : '';
-  
+
     console.log(`│ ${padString(user._id.toString(), 9)}│ ${padString(user.name, 14)}│ ${padString(user.alias, 11)}│ ${padString(user.active ? 'Yes' : 'No', 7)}│ ${padString(user.timezone, 10)}│ ${padString(user.email, 25)}│ ${padString(user.phone, 14)}│ ${padString(user.signature, 21)}│ ${padString(tags, 21)}│ ${padString(user.role, 7)}│ ${padString(user.organization_name, 14)}│ ${padString(submittedTickets, 19)}│ ${padString(assignedTickets, 24)}│ ${padString(organizationTags, 21)}│\n`);
   }
 
@@ -187,37 +187,48 @@ function displayTable(params) {
   printLine();
 }
 
-// Run command
-rl.question('Enter your command: ', (command) => {
-  if (command === 'help') {
-    // Read the content of the readme.md file
-    fs.readFile('readme.md', 'utf8', (err, data) => {
-      if (err) {
-        console.error('Error reading the file:', err);
-      }
-      // Log the content to the console
-      console.log('Content of readme.md:');
-      console.log(data);
-    });
-    return
-  }
+function getInput() {
+  // Run command
+  rl.question('Enter your command (type "exit" to quit, type "help" to see the instructions): ', (command) => {
+    if (command.toLowerCase() === 'exit') {
+      rl.close();
+      return;
+    }
 
-  const [action, entityType, ...conditionParts] = command.split(' ');
-  const condition = conditionParts.join(' ');
-  const [field, value] = condition.split('=').map(part => part.trim());
+    if (command === 'help') {
+      // Read the content of the readme.md file
+      fs.readFile('readme.md', 'utf8', (err, data) => {
+        if (err) {
+          console.error('Error reading the file:', err);
+        }
+        // Log the content to the console
+        console.log('Content of readme.md:');
+        console.log(data);
+      });
+      return
+    }
+    console.log("asdasd")
+    const [action, entityType, ...conditionParts] = command.split(' ');
+    const condition = conditionParts.join(' ');
+    const [field, value] = condition.split('=').map(part => part.trim());
 
-  switch (action) {
-    case ACTIONS.DESCRIBE:
-      describeEntity({ entityType });
-      break;
-    case ACTIONS.TABLE:
-      displayTable({ entityType, field, value, action });
-      break;
-    case ACTIONS.SEARCH:
-      searchAndDisplay({ entityType, field, value, action });
-      break;
-    default:
-      console.log('Invalid command. Please refer to how to run the program using the "help" command.');
-  }
-  rl.close();
-});
+    switch (action) {
+      case ACTIONS.DESCRIBE:
+        describeEntity({ entityType });
+        break;
+      case ACTIONS.TABLE:
+        displayTable({ entityType, field, value, action });
+        break;
+      case ACTIONS.SEARCH:
+        searchAndDisplay({ entityType, field, value, action });
+        break;
+      default:
+        console.log('Invalid command. Please refer to how to run the program using the "help" command.');
+    }
+    getInput();
+  });
+
+}
+
+// Start the loop
+getInput();
