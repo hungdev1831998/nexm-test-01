@@ -205,9 +205,9 @@ function getInput() {
         console.log('Content of readme.md:');
         console.log(data);
       });
+      getInput();
       return
     }
-    console.log("asdasd")
     const [action, entityType, ...conditionParts] = command.split(' ');
     const condition = conditionParts.join(' ');
     const [field, value] = condition.split('=').map(part => part.trim());
